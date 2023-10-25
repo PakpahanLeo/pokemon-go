@@ -128,6 +128,80 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"message": "Nickname of Pokemon changed successfully"})
 	})
 
+	r.GET("/get-pokemon-catch", func(c *gin.Context) {
+		rows, err := db.Query("SELECT id, name, height, weight, images, moves, types FROM pokemongo ORDER BY id ASC")
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		defer rows.Close()
+
+		pokemonMap := make(map[int]*PokemonInfo)
+
+		for rows.Next() {
+			var id int
+			var name, moveData, typeData string
+			var height, weight int
+			var images string
+
+			if err := rows.Scan(&id, &name, &height, &weight, &images, &moveData, &typeData); err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+
+			pokemon, exists := pokemonMap[id]
+			if !exists {
+				pokemon = &PokemonInfo{
+					ID:     id,
+					Name:   name,
+					Height: height,
+					Weight: weight,
+					Images: images,
+				}
+				pokemonMap[id] = pokemon
+			}
+
+			// Unmarshal JSON data from the "moves" column
+			var movesData []struct {
+				Move struct {
+					Name string `json:"name"`
+				} `json:"move"`
+			}
+
+			if err := json.Unmarshal([]byte(moveData), &movesData); err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+
+			for _, m := range movesData {
+				pokemon.Moves = append(pokemon.Moves, Moves{Move: MoveName{Name: m.Move.Name}})
+			}
+
+			// Unmarshal JSON data from the "types" column
+			var typesData []struct {
+				Type struct {
+					Name string `json:"name"`
+				} `json:"type"`
+			}
+
+			if err := json.Unmarshal([]byte(typeData), &typesData); err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+
+			for _, m := range typesData {
+				pokemon.Types = append(pokemon.Types, Type{Type: TypeName{Name: m.Type.Name}})
+			}
+		}
+
+		var pokemonList []PokemonInfo
+		for _, pokemon := range pokemonMap {
+			pokemonList = append(pokemonList, *pokemon)
+		}
+
+		c.JSON(http.StatusOK, pokemonList)
+	})
+
 	r.Run(port)
 }
 
