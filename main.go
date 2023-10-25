@@ -7,5 +7,5 @@ func main() {
 	r.GET("/gin", func(c *gin.Context) {
 		c.String(200, "Hello, Gin!")
 	})
-	r.Run(":8080")
+	r.Run("0.0.0.0:3000")
 }
