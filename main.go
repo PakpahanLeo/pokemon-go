@@ -18,14 +18,28 @@ type Pokemon struct {
 	Nickname string `json:"nickname"`
 }
 
+type Moves struct {
+	Move MoveName `json:"move"`
+}
+type MoveName struct {
+	Name string `json:"name"`
+}
+
+type Type struct {
+	Type TypeName `json:"type"`
+}
+type TypeName struct {
+	Name string `json:"name"`
+}
+
 type PokemonInfo struct {
-	ID     int      `json:"id"`
-	Name   string   `json:"name"`
-	Weight float64  `json:"weight"`
-	Height float64  `json:"height"`
-	Types  []string `json:"types"`
-	Images []string `json:"images"`
-	Moves  []string `json:"moves"`
+	Height int     `json:"height"`
+	ID     int     `json:"id"`
+	Images string  `json:"images"`
+	Moves  []Moves `json:"moves"`
+	Name   string  `json:"name"`
+	Types  []Type  `json:"types"`
+	Weight int     `json:"weight"`
 }
 
 var pokemon Pokemon
@@ -62,11 +76,11 @@ func main() {
 			catchResult = "Success! You caught the Pokemon!"
 			// Convert slices to JSON strings
 			typesJSON, _ := json.Marshal(requestInfo.Types)
-			imagesJSON, _ := json.Marshal(requestInfo.Images)
+			// imagesJSON, _ := json.Marshal(requestInfo.Images)
 			movesJSON, _ := json.Marshal(requestInfo.Moves)
 			// Insert the Pokemon data into the database
 			_, err := db.Exec("INSERT INTO pokemongo (id, name, weight, height, types, images, moves) VALUES (?, ?, ?, ?, ?, ?, ?)",
-				requestInfo.ID, requestInfo.Name, requestInfo.Weight, requestInfo.Height, string(typesJSON), string(imagesJSON), string(movesJSON))
+				requestInfo.ID, requestInfo.Name, requestInfo.Weight, requestInfo.Height, typesJSON, requestInfo.Images, movesJSON)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 				return
