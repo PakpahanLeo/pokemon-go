@@ -65,8 +65,8 @@ func main() {
 			imagesJSON, _ := json.Marshal(requestInfo.Images)
 			movesJSON, _ := json.Marshal(requestInfo.Moves)
 			// Insert the Pokemon data into the database
-			_, err := db.Exec("INSERT INTO pokemongo (name, weight, height, types, images, moves) VALUES (?, ?, ?, ?, ?, ?)",
-				requestInfo.Name, requestInfo.Weight, requestInfo.Height, string(typesJSON), string(imagesJSON), string(movesJSON))
+			_, err := db.Exec("INSERT INTO pokemongo (id, name, weight, height, types, images, moves) VALUES (?, ?, ?, ?, ?, ?, ?)",
+				requestInfo.ID, requestInfo.Name, requestInfo.Weight, requestInfo.Height, string(typesJSON), string(imagesJSON), string(movesJSON))
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 				return
