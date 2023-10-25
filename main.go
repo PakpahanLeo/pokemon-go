@@ -14,6 +14,7 @@ import (
 )
 
 type Pokemon struct {
+	ID       int    `json:"id"`
 	Nickname string `json:"nickname"`
 }
 
@@ -59,7 +60,6 @@ func main() {
 		var catchResult string
 		if randomNumber < 0.5 {
 			catchResult = "Success! You caught the Pokemon!"
-
 			// Convert slices to JSON strings
 			typesJSON, _ := json.Marshal(requestInfo.Types)
 			imagesJSON, _ := json.Marshal(requestInfo.Images)
@@ -88,10 +88,25 @@ func main() {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		// Update the user's nickname with the new value.
-		pokemon.Nickname = requestPokemon.Nickname
 
-		c.JSON(http.StatusOK, gin.H{"message": "Nickname of pokemon changed successfully"})
+		var exists bool
+		err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM pokemongo WHERE id = ?)", requestPokemon.ID).Scan(&exists)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		if !exists {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Pokemon with the specified ID not found"})
+			return
+		}
+		_, err = db.Exec("UPDATE pokemongo SET name = ? WHERE id = ?", requestPokemon.Nickname, requestPokemon.ID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "Nickname of Pokemon changed successfully"})
 	})
 
 	r.Run(port)
