@@ -83,7 +83,11 @@ func main() {
 				requestInfo.ID, requestInfo.Name, requestInfo.Weight, requestInfo.Height, typesJSON, requestInfo.Images, movesJSON)
 			if err != nil {
 				// c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-				c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+				// c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"message": err.Error(),
+					"info":    make(map[string]interface{}),
+				})
 				return
 			}
 		} else {
