@@ -39,7 +39,7 @@ func main() {
 		c.String(200, "Hello, Gin!")
 	})
 
-	db, err := sql.Open("mysql", "root:@tcp(roundhouse.proxy.rlwy.net:34843)/railway")
+	db, err := sql.Open("mysql", "root:n8hgdm64f@fokpvdps0$o05j_s@jpchf@tcp(roundhouse.proxy.rlwy.net:34843)/railway")
 	if err != nil {
 		log.Fatal(err)
 	}
