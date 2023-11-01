@@ -254,6 +254,56 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"message": "Category added successfully"})
 	})
 
+	type Product struct {
+		Name        string `json:"name"`
+		Category    string `json:"category"`
+		Price       int    `json:"price"`
+		Description string `json:"description"`
+		Discount    int    `json:"discount"`
+		Image       string `json:"image"`
+		Status      string `json:"status"`
+	}
+
+	r.POST("/addProduct", func(c *gin.Context) {
+		// Parse form data from the request
+		err := c.Request.ParseMultipartForm(10 << 20) // 10 MB limit for form data
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		// Get form data values
+		productName := c.Request.FormValue("name")
+		category := c.Request.FormValue("category")
+		price := c.Request.FormValue("price")
+		description := c.Request.FormValue("description")
+		discount := c.Request.FormValue("discount")
+		status := c.Request.FormValue("status")
+
+		// Validate form data
+		if productName == "" || category == "" || price == "" || description == "" || discount == "" || status == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "All fields are required"})
+			return
+		}
+
+		// Handle image upload from form field named "image"
+		file, err := c.FormFile("image")
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Image upload failed"})
+			return
+		}
+
+		_, err = db.Exec("INSERT INTO product (name, category, price, description, discount, image, status) VALUES (?, ?, ?, ?, ?, ?, ?)",
+			productName, category, price, description, discount, file.Filename, status)
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert product into the database"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "Product added successfully"})
+	})
+
 	r.Run(port)
 }
 
