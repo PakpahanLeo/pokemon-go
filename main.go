@@ -287,14 +287,14 @@ func main() {
 		}
 
 		// Handle image upload from form field named "image"
-		file, err := c.FormFile("image")
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Image upload failed"})
-			return
-		}
+		// file, err := c.FormFile("image")
+		// if err != nil {
+		// 	c.JSON(http.StatusBadRequest, gin.H{"error": "Image upload failed"})
+		// 	return
+		// }
 
 		_, err = db.Exec("INSERT INTO product (name, category, price, description, discount, image, status) VALUES (?, ?, ?, ?, ?, ?, ?)",
-			productName, category, price, description, discount, file.Filename, status)
+			productName, category, price, description, discount, "", status)
 
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert product into the database"})
