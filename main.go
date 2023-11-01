@@ -273,6 +273,7 @@ func main() {
 		}
 
 		// Get form data values
+		productId := c.Request.FormValue("id")
 		productName := c.Request.FormValue("name")
 		category := c.Request.FormValue("category")
 		price := c.Request.FormValue("price")
@@ -281,7 +282,7 @@ func main() {
 		status := c.Request.FormValue("status")
 
 		// Validate form data
-		if productName == "" || category == "" || price == "" || description == "" || discount == "" || status == "" {
+		if productId == "" || productName == "" || category == "" || price == "" || description == "" || discount == "" || status == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "All fields are required"})
 			return
 		}
@@ -293,8 +294,8 @@ func main() {
 		// 	return
 		// }
 
-		_, err = db.Exec("INSERT INTO product (name, category, price, description, discount, image, status) VALUES (?, ?, ?, ?, ?, ?, ?)",
-			productName, category, price, description, discount, "", status)
+		_, err = db.Exec("INSERT INTO product (id, name, category, price, description, discount, status) VALUES (?, ?, ?, ?, ?, ?, ?)",
+			productId, productName, category, price, description, discount, status)
 
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert product into the database"})
