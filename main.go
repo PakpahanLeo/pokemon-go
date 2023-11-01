@@ -202,6 +202,36 @@ func main() {
 		c.JSON(http.StatusOK, pokemonList)
 	})
 
+	type User struct {
+		ID       int    // or uint, depending on your database schema
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+
+	r.POST("/login", func(c *gin.Context) {
+		var requestUser User
+		if err := c.ShouldBindJSON(&requestUser); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		// Query the database to check if the user exists
+		var foundUser User
+		err := db.QueryRow("SELECT username, password FROM users WHERE username = ?", requestUser.Username).Scan(&foundUser.Username, &foundUser.Password)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username or password"})
+			return
+		}
+
+		// Check if the password matches (use a secure password hashing library in production)
+		if requestUser.Password != foundUser.Password {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username or password disini"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "Login successful", "userID": foundUser.ID})
+	})
+
 	r.Run(port)
 }
 
