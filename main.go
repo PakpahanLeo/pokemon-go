@@ -202,6 +202,7 @@ func main() {
 		c.JSON(http.StatusOK, pokemonList)
 	})
 
+	//KASIR
 	type User struct {
 		ID       int    // or uint, depending on your database schema
 		Username string `json:"username"`
@@ -230,6 +231,27 @@ func main() {
 		}
 
 		c.JSON(http.StatusOK, gin.H{"message": "Login successful", "userID": foundUser.ID})
+	})
+
+	type Category struct {
+		Name string `json:"name"`
+	}
+
+	r.POST("/addCategory", func(c *gin.Context) {
+		var category Category
+		if err := c.ShouldBindJSON(&category); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		// Insert the new category into the database
+		_, err := db.Exec("INSERT INTO category (name) VALUES (?)", category.Name)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert category into the database"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "Category added successfully"})
 	})
 
 	r.Run(port)
