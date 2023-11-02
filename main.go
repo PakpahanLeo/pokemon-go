@@ -317,6 +317,40 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"message": "Product added successfully"})
 	})
 
+	r.GET("/products", func(c *gin.Context) {
+		// Query the database to get all products
+		rows, err := db.Query("SELECT id, name, category, price, description, discount, status FROM product")
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to fetch products from the database", "code": http.StatusInternalServerError})
+			return
+		}
+		defer rows.Close()
+
+		var products []Product
+
+		// Iterate through the rows and populate the products slice
+		for rows.Next() {
+			var product Product
+			err := rows.Scan(&product.Id, &product.Name, &product.Category, &product.Price, &product.Description, &product.Discount, &product.Status)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to scan product data", "code": http.StatusInternalServerError})
+				return
+			}
+			products = append(products, product)
+		}
+
+		// Check for errors from iterating over rows
+		if err := rows.Err(); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": "Error while iterating over products", "code": http.StatusInternalServerError})
+			return
+		}
+
+		// Create the response JSON object
+		response := gin.H{"message": "Products retrieved successfully", "code": http.StatusOK, "data": products}
+
+		c.JSON(http.StatusOK, response)
+	})
+
 	// r.POST("/addProduct", func(c *gin.Context) {
 	// 	// Parse form data from the request
 	// 	err := c.Request.ParseMultipartForm(10 << 20) // 10 MB limit for form data
