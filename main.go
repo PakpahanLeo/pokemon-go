@@ -234,6 +234,7 @@ func main() {
 	})
 
 	type Category struct {
+		ID   int    `json:"id"`
 		Name string `json:"name"`
 	}
 
@@ -252,6 +253,40 @@ func main() {
 		}
 
 		c.JSON(http.StatusOK, gin.H{"message": "Category added successfully"})
+	})
+
+	r.GET("/categories", func(c *gin.Context) {
+		// Query the database to get all categories
+		rows, err := db.Query("SELECT id, name FROM category")
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to fetch categories from the database", "code": http.StatusInternalServerError})
+			return
+		}
+		defer rows.Close()
+
+		var categories []Category
+
+		// Iterate through the rows and populate the categories slice
+		for rows.Next() {
+			var category Category
+			err := rows.Scan(&category.ID, &category.Name)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to scan category data", "code": http.StatusInternalServerError})
+				return
+			}
+			categories = append(categories, category)
+		}
+
+		// Check for errors from iterating over rows
+		if err := rows.Err(); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": "Error while iterating over categories", "code": http.StatusInternalServerError})
+			return
+		}
+
+		// Create the response JSON object
+		response := gin.H{"message": "Categories retrieved successfully", "code": http.StatusOK, "data": categories}
+
+		c.JSON(http.StatusOK, response)
 	})
 
 	type Product struct {
