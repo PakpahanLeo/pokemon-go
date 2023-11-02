@@ -272,7 +272,7 @@ func main() {
 		}
 
 		// Insert the new product into the database
-		_, err := db.Exec("INSERT INTO products (id, name, category, price, description, discount, status) VALUES (?, ?, ?, ?, ?, ?, ?)",
+		_, err := db.Exec("INSERT INTO product (id, name, category, price, description, discount, status) VALUES (?, ?, ?, ?, ?, ?, ?)",
 			product.Id, product.Name, product.Category, product.Price, product.Description, product.Discount, product.Status)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert product into the database"})
